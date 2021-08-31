@@ -178,40 +178,61 @@
         <div class="show-form"></div>
         <div class="forms">
             <form class="ui form form-ui" id="form-ui-ui" method="">
+				<button class="out" type="button">Выйти</button>
                 <div class="field form-field">
-                    <label>USername</label>
-                    <input type="text" name="first-name" placeholder="First Name">
-                </div>
-                <div class="field form-field">
-                    <label>Last Name</label>
-                    <input type="text" name="last-name" placeholder="Last Name">
+                    <label class="label-input">Username</label>
+                    <input type="text" name="username" placeholder="Username" class="username" value=""/>
                 </div>
                 <div class="field form-field">
-                    <label>USername</label>
-                    <input type="text" name="first-name" placeholder="First Name">
+                    <label class="label-input">Skills</label>
+                    <textarea type="text" name="skills" placeholder="Skills" class="skills"></textarea>
                 </div>
                 <div class="field form-field">
-                    <label>Last Name</label>
-                    <input type="text" name="last-name" placeholder="Last Name">
+                    <label class="label-input">Stack</label>
+                    <textarea type="text" name="stack" placeholder="Stack" class="stack"></textarea>
                 </div>
-                <div class="field form-filed">
-                    <label>USername</label>
-                    <input type="text" name="first-name" placeholder="First Name">
+                <div class="field form-field">
+                    <label class="label-input">Description</label>
+                    <textarea type="text" name="desc" placeholder="Description" class="description"></textarea>
                 </div>
-                <div class="field form-filed">
-                    <label>Last Name</label>
-                    <input type="text" name="last-name" placeholder="Last Name">
-                </div>
+				<div class="input__wrapper">
+					<div>
+						<!-- <label for="failik">
+							<span class="label-fiel">DOWNLOAD AVATAR</span>
+						</label> -->
+						<input type="file" name="avatar" placeholder="avatar" class=" avatar" id="" >
+					</div>
+					<div>
+						<!-- <label for="failik">
+							<span class="label-fiel">DOWNLOAD CV</span>
+						</label> -->
+						<input type="file" name="cv" placeholder="CV" class=" cv" id="" >
+					</div>
+					<span class="check-verify">Verify
+						<input type="checkbox" name="verify" class="verify" ></input>
+					</span>
+				</div>
                 <div class="form-btn">
-                    <button class="ui button ui-button" type="submit">Отправить</button>
-                    <button class="ui button ui-button" id="btn-form">Скрыть</button>
+                    <button class="" id="btn-form">Скрыть</button>
+					<button class="" type="submit">Отправить</button>
                 </div>
             </form>
         </div>
 
 			<div class="section about" id="section-about"></div>
+			<div class="content-popup">
+				<div class="popup">
+					<form class="the-interview-form">
+						<input type="email" id="inp-popup" class="email" name="email" placeholder="email"/>
+						<input type="text" id="inp-popup"class="name" name="name" placeholder="name"/>
+						<div class='btns-popup'>
+							<button type="submit" class="btn-submit">Submit</button>
+							<button type="button" class="btn-cancel">Cancel</button>
+						</div>
+					</form>
+				</div>
+			</div>
             <!-- <div id='sections'></div> -->
-			
 		
 		<!-- Footer -->
 		<footer class="footer">
