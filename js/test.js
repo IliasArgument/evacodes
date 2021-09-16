@@ -1,14 +1,16 @@
-const userCollection = [];
-var ADMIN = false;
+const userCollection = []; //test variable
+var ADMIN = false; //access admin
 
 let content = document.querySelector('#section-about');
-let btnHide = document.querySelector('#btn-form');
 //form
 let btnForm = document.querySelector('.show-form');
-let Allform = document.querySelector('.forms');
+let userForm = document.querySelector('.forms');
 let forms = document.querySelector('#form-ui-ui');
 let input = document.querySelectorAll('.inp');
 let logOut = document.querySelector('.out');
+let sendButton = document.querySelector('.btn-form-send')
+let saveButton = document.querySelector('.btn-form-save')
+let btnHide = document.querySelector('#btn-form');
 //input value
 const names = document.querySelector('input.username');
 const stack = document.querySelector('textarea.stack');
@@ -25,14 +27,13 @@ const password = document.querySelector('input.pass-autorize');
 const popup = document.querySelector('.content-popup');
 const cancel = document.querySelector('.btn-cancel');
 //form of interview
-
 const interviewForm = document.querySelector('.the-interview-form');
 const userEmail = document.querySelector('input.email');
 const userName = document.querySelector('input.name');
 const btnPopupForm = document.querySelector('.btn-popup');
 
 //validate form
-const validateForm = (email, name) => {
+const validateInterviewForm = (email, name) => {
     const validate = true;
 
     if (!email.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
@@ -43,10 +44,9 @@ const validateForm = (email, name) => {
     }
     return validate
 }
-
 //post interview
-const postUserDataInterview = () => {
-    const onClose = () => {
+const clientDataForAccessToInterviews = () => {
+    const onClosePopup = () => {
         const asd = popup.style.display = 'none';
         return popup && asd
     }
@@ -55,7 +55,7 @@ const postUserDataInterview = () => {
         interviewForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            if (!validateForm(userEmail, userName)) return
+            if (!validateInterviewForm(userEmail, userName)) return
 
             const data = {
                 email: userEmail.value,
@@ -63,27 +63,31 @@ const postUserDataInterview = () => {
             }
             axios({
                 method: 'post',
-                url: 'http://localhost:5000/api/v1/data/interview',
+                url: 'https://evacodes-blockchain.herokuapp.com/api/v1/data/interview',
                 data: data
             })
                 .then(data => {
                     if (data) {
                         userEmail.value = ''
                         userName.value = ''
-                        setTimeout(() => onClose(), 1000)
+                        setTimeout(() => onClosePopup(), 1000)
                     }
-                    console.log(data, 'VSE GOOD')
+                    console.log(data, 'interview request completed successfully')
                 })
                 .catch(err => {
-                    console.log(err, 'err with interview user')
+                    console.log(err, 'err with interview request')
                 })
 
         })
     }
 }
-postUserDataInterview()
 
-const updateUserLogin = () => {
+clientDataForAccessToInterviews()
+
+// autorize
+
+const adminAuthorization = () => {
+    console.log(1)
     if (formAutorize) {
         formAutorize.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -94,17 +98,19 @@ const updateUserLogin = () => {
             };
             axios({
                 method: 'post',
-                url: 'http://localhost:5000/api/v1/login/autorization',
+                url: 'https://evacodes-blockchain.herokuapp.com/api/v1/login/autorization',
                 data: data
             })
                 .then(data => {
+                    console.log(2)
+
                     const { token } = data.data;
                     ADMIN = !ADMIN
-                    document.cookie = `${token}`
+                    window.Cookies.set('admin', `${token}`, { expires: 7 })
                     if (data.status === 200) {
-                        ADMIN = !ADMIN
+                        ADMIN = true
                         localStorage.setItem('ADMIN', ADMIN)
-                        document.location.href = "http://127.0.0.1:5500/test.html"
+                        document.location.href = `https://blockchain.evacodes.com/test/test.html`
                     }
                 })
                 .catch(err => {
@@ -112,35 +118,33 @@ const updateUserLogin = () => {
                 })
                 .finally(() => {
                     ADMIN = !ADMIN
-
+                    console.log(ADMIN, 'AD')
                 })
         })
 
     }
 }
-setInterval(() => updateUserLogin(), 4000)
+adminAuthorization()
+
+// admin log out
 
 if (logOut) {
     logOut.addEventListener('click', () => {
-        let mydate = new Date();
-        mydate.setTime(mydate.getTime() - 1);
-        document.cookie = "username=; expires=" + mydate.toGMTString();
+        // let mydate = new Date();
+        // mydate.setTime(mydate.getTime() - 1);
+        window.Cookies.remove('admin')
         localStorage.clear();
-        adminSttings();
+        adminForm();
     })
 }
-
 
 const postUserData = () => {
 
     if (forms) {
         forms.addEventListener('submit', (e) => {
-            console.log(avatar, 'ava')
-            console.log(cv, 'cv')
-
+            console.log(names.value, 'names.value')
             e.preventDefault()
             let formData = new FormData();
-            console.log(avatar, 'api form Data')
             if (names) formData.append("username", names.value);
             if (skills) formData.append("skills", skills.value);
             if (description) formData.append("description", description.value);
@@ -151,12 +155,10 @@ const postUserData = () => {
 
             axios({
                 method: 'post',
-                url: 'http://localhost:5000/api/v1/user',
+                url: 'https://evacodes-blockchain.herokuapp.com/api/v1/user',
                 headers: {
                     'Content-Type': 'multipart/form-data',
-
-                    authorization: 'Bearer ' + document.cookie
-
+                    authorization: 'Bearer ' + window.Cookies.get('admin')
                 },
                 data: formData
             })
@@ -164,7 +166,9 @@ const postUserData = () => {
                     console.log('Пользователь отпрвлен в базу данных')
                     if (data) {
                         getUsersData();
-                        clearInput();
+                        clearForm();
+                        forms.reset()
+
                     }
 
                 })
@@ -177,24 +181,106 @@ const postUserData = () => {
 
 postUserData();
 
+// AWS s3
+(() => {
+    if (document.querySelector(".avatar")) document.querySelector(".avatar").onchange = () => {
+        const files = document.querySelector('.avatar').files;
+        const file = files[0];
+        // file.name = withoutSpaces(file.name);
+        // console.log(withoutSpaces(file.name), 'file')
+        if (file == null) {
+            return alert('No file selected.');
+        }
+        getSignedRequest(file);
+    };
+})();
+const ADMIN_ACCESS = localStorage.getItem('ADMIN')
+
+if (ADMIN_ACCESS) {
+    (() => {
+        document.querySelector(".cv").onchange = () => {
+            const files = document.querySelector('.cv').files;
+            const file = files[0];
+            if (file == null) {
+                return alert('No file selected.');
+            }
+            getSignedRequest(file);
+        };
+    })();
+}
+
+
+function getSignedRequest(file) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `https://evacodes-blockchain.herokuapp.com/api/v1/sign-s3?file-name=${file.name}&file-type=${file.type}`);
+    xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                uploadFile(file, response.signedRequest, response.url);
+            }
+            else {
+                alert('Could not get signed URL.');
+            }
+        }
+    };
+    xhr.send();
+}
+function uploadFile(file, signedRequest, url) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', signedRequest);
+    // https://evacodes.s3.amazonaws.com/
+    // http://127.0.0.1:5000/
+    xhr.send(file);
+}
+
+function loadImage(id, src) {
+    var article = document.getElementById(id);
+
+    const avatar = article?.dataset.avatar
+    let images = src + avatar;
+
+    var ts = Date.now(), img = new Image, timer;
+    console.log(img, 'load')
+    img.onerror = function () {
+        if (Date.now() - ts < 10000) {
+            timer = setTimeout(function () { img.images = images; }, 1000);
+            clearInterval(timer)
+        }
+    }
+    img.onload = function () {
+        // clearInterval(timer)
+        document.getElementById(id).images = images;
+    }
+    img.images = images;
+}
 
 const getUsersData = async () => {
-    let response = await fetch('http://localhost:5000/api/v1/users');
-    // ADMIN = true
-    let users = await response.json();
+    const ADMIN_ACCESS = localStorage.getItem('ADMIN')
+    let users = [];
+    try {
+        let response = await fetch('https://evacodes-blockchain.herokuapp.com/api/v1/users');
+        users = await response.json();
+        console.log(users, 'users')
+    } catch (error) {
+        console.log(error + 'err in fetch users data api!');
+    }
+    if (users?.length) userCollection.push(users);
+    let usersCards = users?.map((user) => {
 
-    userCollection.push(users);
-    const ADMIN_BOOL = localStorage.getItem('ADMIN')
-    //class='field-username' data-username=${city.username}
-    let listItems = users?.map((city) => {
-
-        if (!!ADMIN_BOOL) {
+        if (!!ADMIN_ACCESS) {
             return `
             <div class="content content-box" id='contents'>
+            <p class='edit' 
+            data-name="${user.username}"
+            data-skills="${user.skills}"
+            data-stack="${user.stack}"
+            data-description="${user.description}"
+            data-id="${user._id}"
+            >Редактировать</p>
             <div class="image">
-                <img src=${'http://localhost:5000/' + city.avatar} alt=${city.avatar} class="user-image" />
+                <img src="${'https://evacodes.s3.amazonaws.com/' + user.avatar}" alt="${user.avatar}" class="user-image" id="myImage" data-avatar="${user.avatar}" />
             </div>
-    
             <div class="desc">
                 <p>
                     Hello! I’m Daniel Curry. Web designer from USA, California, 
@@ -205,82 +291,174 @@ const getUsersData = async () => {
                     <ul id='desk'>
                         <li>
                             <strong contenteditable="false">Username:</strong> 
-                            <span contenteditable="true" class='field-username' data-username=${city.username}>${city.username}</span>
+                            <span class='field-username' data-username="${user.username}" data-skills="${user.skills}">${user.username}</span>
                         </li>
                         <li>
                             <strong contenteditable="false">Skills:</strong>
-                            <span id='skills' contenteditable="true" class='field-skills' data-skills=${city.skills}>${city.skills}</span>
+                            <span id='skills' class='field-skills' data-skills="${user.skills}">${user.skills}</span>
                         </li>
                         <li>
                             <strong contenteditable="false">Stack:</strong> 
-                            <span id='stack' contenteditable="true" class='field-stack' data-stack=${city.stack}>${city.stack}</span></li>
+                            <span id='stack' class='field-stack' data-stack="${user.stack}">${user.stack}</span></li>
                         <li>
                             <strong contenteditable="false">Description:</strong>
-                            <span id='description' contenteditable="true" class='field-description' data-description=${city.description}>${city.description}</span>
+                            <span id='description' class='field-description' data-description="${user.description}">${user.description}</span>
                         </li>
                     </ul>
                 </div>
                 <div class="bts">
-                    <button class="btns remove hover-animated" id="btn-delete" data-id=${city._id} data-avatar=${city.avatar} data-cv=${city.cv}>
+                    <button class="btns remove hover-animated" id="btn-delete" data-id="${user._id}" data-avatar="${user.avatar}" data-cv=${user.cv}>
                         <span class="circle" id="value"></span>
                         <span class="lnk">Delete user</span>
                     </button>
-                    <div class="container-cv"> <button class="btn-cv" data-cv=${city.cv}>Открыть CV</button> </div>
-                </div>
-                
+                    <div class="container-cv"> <button class="btn-cv" data-cv="${user.cv}">Открыть CV</button> </div>
+                </div>     
             </div>
-    
         </div> `
         } else {
             return `
             <div class="content content-box" id='contents'>
-    
             <div class="image">
-                <img src=${'http://localhost:5000/' + city.avatar} alt=${city.avatar} class="user-image" />
+                <img src="${'https://evacodes.s3.amazonaws.com/' + user.avatar}" alt="${user.avatar}" class="user-image" />
             </div>
-            ${city.checkbox ? '<img src="../images/mark.png" alt="done" class="done" />' : ''}
-    
+            ${user.checkbox ? '<img src="../images/mark.png" alt="done" class="done" />' : ''}
             <div class="desc">
                 <p>Hello! I’m Daniel Curry. Web designer from USA, California, 
                     San Francisco. I have rich experience in web site design and building, 
                     also I am good at wordpress. I love to talk with you about our unique.</p>
                 <div class="info-list">
                     <ul id='desk'>
-                        <li><strong>Username:</strong> <span>${city.username}</span></li>
-                        <li><strong>Skills:</strong> <span id='skills'>${city.skills}</span></li>
-                        <li><strong>Stack:</strong> <span id='stack'>${city.stack}</span></li>
-                        <li><strong>Description:</strong> <span id='description'>${city.description}</span></li>
+                        <li><strong>Username:</strong> <span>${user.username}</span></li>
+                        <li><strong>Skills:</strong> <span id='skills'>${user.skills}</span></li>
+                        <li><strong>Stack:</strong> <span id='stack'>${user.stack}</span></li>
+                        <li><strong>Description:</strong> <span id='description'>${user.description}</span></li>
                     </ul>
                 </div>
                 <div class="container-cv">
-                    <button class="btn-cv" data-cv=${city.cv}>Open CV</button>
-                    ${city.checkbox ? '<button class="btn-interview" id="pos-interview">Look interview</button>' : ''}              
+                    <button class="btn-cv" data-cv="${user.cv}">Open CV</button>
+                    ${user.checkbox ? '<button class="btn-interview" id="pos-interview">Look interview</button>' : ''}              
                 </div>
             </div>
-    
         </div> `
         }
 
     }).join('')
 
     if (content) {
-        content.innerHTML = listItems;
+        content.innerHTML = usersCards;
+        loadImage('myImage', 'https://evacodes.s3.amazonaws.com/')
     }
 
 }
+getUsersData()
 
-getUsersData();
+
+// Edit user data
+
+$(document).on('click', '.edit', function (e) {
+    const updateName = $(this).data('name');
+    const updateStack = $(this).data('stack');
+    const updateSkills = $(this).data('skills');
+    const updateDescription = $(this).data('description');
+    const id = $(this).data('id');
+
+    sendButton.style.display = 'none'
+    saveButton.style.display = 'block'
+    saveButton.setAttribute('data-id', id)
+    console.log('sho')
+    names.value = updateName
+    stack.value = updateStack
+    skills.value = updateSkills
+    description.value = updateDescription
+    console.log(updateName);
+
+    window.scrollTo(0, 400);
+})
+
+
+const updateUserData = async () => {
+    let users = [];
+    // getting user id 
+    try {
+        let response = await fetch('https://evacodes-blockchain.herokuapp.com/api/v1/users');
+        if (response.ok) {
+            users = await response.json();
+        }
+    } catch (error) {
+        console.log(error);
+    }
+
+    $(document).on('click', '.btn-form-save', function (e) {
+
+        if (users?.length) {
+            const updateUserData = document.querySelector('.btn-form-save')
+            const id = updateUserData.dataset.id
+            //newUserdata
+            let newName = names.value;
+            let newStack = stack.value;
+            let newSkills = skills.value;
+            let newDesc = description.value;
+            let newCv = cv?.files[0]?.name;
+            let newAvatar = avatar?.files[0]?.name;
+            console.log(users, 'users')
+            const userId = users.find(user => user._id === id)
+            //oldUserdata
+            let oldName = userId?.username;
+            // console.log(oldName, 'oldName oldName')
+            let oldStack = userId?.stack;
+            let oldSkills = userId?.skills;
+            let oldDesc = userId?.description;
+            let oldCv = userId?.cv;
+            let oldAvatar = userId?.avatar;
+
+            sendButton.style.display = 'block'
+            saveButton.style.display = 'none'
+
+            const data = {
+                newName,
+                newStack,
+                newSkills,
+                newDesc,
+                newCv,
+                newAvatar,
+                oldName,
+                oldStack,
+                oldSkills,
+                oldDesc,
+                oldCv,
+                oldAvatar,
+            }
+
+            axios({
+                method: 'post',
+                url: 'https://evacodes-blockchain.herokuapp.com/api/v1/update/user',
+                data: data
+            })
+                .then(data => {
+                    console.log(data, 'user update')
+                    clearForm()
+                    getUsersData()
+                    forms.reset()
+                })
+                .catch(err => {
+                    console.log(err, 'err with update')
+                })
+        }
+    })
+}
+updateUserData()
+
 
 // delete user
+
 $(document).on('click', '#btn-delete', function (e) {
     const id = $(this).data('id');
     const avatar = $(this).data('avatar');
     const cv = $(this).data('cv');
 
-    console.log(id, 'id')
     axios({
         method: 'delete',
-        url: `http://localhost:5000/api/v1/users/${id}`,
+        url: `https://evacodes-blockchain.herokuapp.com/api/v1/users/${id}`,
         data: {
             id: id,
             avatar: avatar,
@@ -288,149 +466,39 @@ $(document).on('click', '#btn-delete', function (e) {
         }
     })
         .then(data => {
-            console.log(data, 'УДАЛЕННН')
+            console.log(data, 'user deleted')
             if (e.target.offsetParent.offsetParent) e.target.offsetParent.offsetParent.style.display = 'none'
         })
         .catch(err => {
-            console.log(err, 'err delete user')
+            console.log(err, 'error to delete user')
         })
 });
 
-////
-
-$(document).on('click', '.field-username', function (e) {
-    const username = $(this).data('username');
-    console.log(username, 'usernames')
-    $(document).on('keypress', '.field-username', (e) => {
-        const newName = $(this).text();
-        if (username) newName
-        const data = { newName, username }
-        if (e.keyCode == 13) {
-            e.preventDefault()
-            axios({
-                method: 'post',
-                url: 'http://localhost:5000/api/v1/change/name',
-                data: data
-            })
-                .then(data => {
-                    console.log(data, 'VSE GOOD')
-                })
-                .catch(err => {
-                    console.log(err, 'err with interview user')
-                })
-        }
-    })
-})
-
-$(document).on('click', '.field-skills', function (e) {
-    const skills = $(this).data('skills');
-
-    $(document).on('keypress', '.field-skills', (e) => {
-        const newSkills = $(this).text();
-        if (skills) newSkills
-        const data = { skills, newSkills }
-
-        if (e.keyCode == 13) {
-            e.preventDefault();
-            axios({
-                method: 'post',
-                url: 'http://localhost:5000/api/v1/change/skills',
-                data: data
-            })
-                .then(data => {
-                    console.log(data, 'VSE GOOD')
-                })
-                .catch(err => {
-                    console.log(err, 'err with interview user')
-                })
-        }
-    })
-})
-
-$(document).on('click', '.field-stack', function (e) {
-    const stack = $(this).data('stack');
-
-    $(document).on('keypress', '.field-stack', (e) => {
-        const newStack = $(this).text();
-        if (stack) newStack
-        const data = { stack, newStack }
-
-        if (e.keyCode == 13) {
-            e.preventDefault();
-            axios({
-                method: 'post',
-                url: 'http://localhost:5000/api/v1/change/stack',
-                data: data
-            })
-                .then(data => {
-                    console.log(data, 'VSE GOOD')
-                })
-                .catch(err => {
-                    console.log(err, 'err with interview user')
-                })
-        }
-    })
-})
-
-$(document).on('click', '.field-description', function (e) {
-    const desk = $(this).data('description');
-
-    $(document).on('keypress', '.field-description', (e) => {
-        const newDesk = $(this).text();
-        if (desk) newDesk
-        const data = { desk, newDesk }
-
-        if (e.keyCode == 13) {
-            e.preventDefault();
-            axios({
-                method: 'post',
-                url: 'http://localhost:5000/api/v1/change/description',
-                data: data
-            })
-                .then(data => {
-                    console.log(data, 'VSE GOOD')
-                })
-                .catch(err => {
-                    console.log(err, 'err with interview user')
-                })
-        }
-    })
-})
-
-////
+// open cv
 
 $(document).on('click', '.btn-cv', function (e) {
     e.preventDefault();
     const cv = $(this).data('cv');
-    window.open(`http://localhost:5000/api/v1/cv/upload/${cv}`, '_blank');
+    console.log(cv, 'cv')
+    window.open(`https://evacodes.s3.amazonaws.com/${cv}`, '_blank');
 });
 
 //look interview
+
 $(document).on('click', '.btn-interview', function (e) {
     popup.style.display = 'flex'
-    console.log('popup')
-
 });
 
 //cancel popup
-cancel.addEventListener('click', (e) => {
+
+cancel && cancel.addEventListener('click', (e) => {
     if (popup) popup.style.display = 'none'
 })
 
-// get cv
-$(document).on('click', '.btn-cv', function (e) {
-    e.preventDefault();
-    const cv = $(this).data('cv');
-    window.open(`http://localhost:5000/api/v1/cv/upload/${cv}`, '_blank');
-});
-
-
 const formUser = () => {
-
     if (forms) {
         forms.addEventListener('submit', (e) => {
             e.preventDefault()
-            console.log('psp')
         })
     }
     if (btnHide) {
@@ -443,6 +511,13 @@ const formUser = () => {
 
 formUser();
 
+const withoutSpaces = (str) => {
+    if (str?.length) {
+        return str.replace(/\s/g, '')
+    };
+    return str
+}
+
 function hideForm() {
     forms.style.display = "none";
     btnForm.innerHTML = `<button class='btns' onclick='showForm()'>Вернуть форму</button>`;
@@ -453,7 +528,7 @@ function showForm() {
     btnForm.innerHTML = ''
 }
 
-function clearInput() {
+function clearForm() {
     names.value = '',
         skills.value = '',
         description.value = '',
@@ -461,16 +536,15 @@ function clearInput() {
 }
 
 
-function adminSttings() {
+function adminForm() {
     ADMIN = false;
-    const ADMIN_BOOL = localStorage.getItem('ADMIN')
-
-    if (!!ADMIN_BOOL) {
-        if (Allform) Allform.style.display = 'block';
+    const ADMIN_ACCESS = localStorage.getItem('ADMIN')
+    if (!!ADMIN_ACCESS) {
+        if (userForm) userForm.style.display = 'block';
     } else {
-        if (Allform) Allform.style.display = 'none';
+        if (userForm) userForm.style.display = 'none';
     }
 }
 
-adminSttings();
+adminForm();
 

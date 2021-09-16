@@ -2886,6 +2886,16 @@
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
+.button-form-container {
+	display: flex;
+	flex-direction: column;
+}
+.btn-form-save {
+	display: none;
+}
+.btn-form-send {
+	display: block;
+}
 
 /* form end */
 
@@ -2921,6 +2931,24 @@
 	position: absolute;
 	left: 164px;
 	top: 2px;
+}
+/* s3 */
+.s3 {
+	width: 50px;
+	height: 50px;
+}
+/* s3 */
+.edit {
+	color: 'white';
+	padding: 5px;
+	border: 1px solid silver;
+	cursor: pointer;
+	width: 150px;
+	display: flex;
+	justify-content: center;
+}
+.edit:hover {
+	opacity: .5;
 }
 .btn-interview {
 	padding: 10px;

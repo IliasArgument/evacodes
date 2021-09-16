@@ -200,13 +200,13 @@
 						<!-- <label for="failik">
 							<span class="label-fiel">DOWNLOAD AVATAR</span>
 						</label> -->
-						<input type="file" name="avatar" placeholder="avatar" class=" avatar" id="" >
+						<input type="file" name="avatar" placeholder="avatar" class="avatar" id="avatar-file" >
 					</div>
 					<div>
 						<!-- <label for="failik">
 							<span class="label-fiel">DOWNLOAD CV</span>
 						</label> -->
-						<input type="file" name="cv" placeholder="CV" class=" cv" id="" >
+						<input type="file" name="cv" placeholder="CV" class="cv" id="cv-file" >
 					</div>
 					<span class="check-verify">Verify
 						<input type="checkbox" name="verify" class="verify" ></input>
@@ -214,7 +214,10 @@
 				</div>
                 <div class="form-btn">
                     <button class="" id="btn-form">Скрыть</button>
-					<button class="" type="submit">Отправить</button>
+					<div class="button-form-container">
+						<button class="btn-form-send" type="submit">Отправить</button>
+						<button class="btn-form-save" type="button">Сохранить</button>
+					</div>
                 </div>
             </form>
         </div>
@@ -281,15 +284,16 @@
 	<script src="js/isotope.pkgd.js"></script>
 	<script src="js/swiper.js"></script>
 	<script src="js/grained.js"></script>
-	<script src="js/scripts.js"></script>
-    <script src="js/test.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<script src="js/scripts.js"></script>
+
     <script
             src="https://code.jquery.com/jquery-3.1.1.min.js"
             integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
             crossorigin="anonymous"></script>
     <script src="semantic/dist/semantic.min.js"></script>
-
+	<script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+	<script src="js/test.js"></script>
 
 
 </body>
